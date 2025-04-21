@@ -7,7 +7,7 @@ import shutil
 from populate_database import load_documents, split_documents, add_to_chroma, clear_database
 from query_data import query_rag
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.secret_key = "ragappsecretkey"
 app.config['UPLOAD_FOLDER'] = 'data'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB limit

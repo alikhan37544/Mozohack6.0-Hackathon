@@ -3,120 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG System</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .card h2 {
-            margin-top: 0;
-        }
-        .flash-messages {
-            margin-bottom: 20px;
-        }
-        .flash-message {
-            padding: 10px;
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-        button, input[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button.danger {
-            background-color: #dc3545;
-        }
-        input[type="text"], textarea {
-            width: 100%;
-            padding: 8px;
-            margin: 8px 0;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .document-list {
-            margin-top: 10px;
-            list-style-type: none;
-            padding: 0;
-        }
-        .document-list li {
-            padding: 5px 0;
-        }
-        #result-container {
-            margin-top: 20px;
-            white-space: pre-wrap;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            min-height: 100px;
-            display: none;
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 2s linear infinite;
-            margin: 10px auto;
-            display: none;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <title>MediGuard - Medical RAG System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>RAG System Interface</h1>
-    
-    <!-- Flash messages -->
-    <div class="flash-messages">
-        {% for message in get_flashed_messages() %}
-            <div class="flash-message">{{ message }}</div>
-        {% endfor %}
-    </div>
-    
     <div class="container">
-        <!-- Document Upload Section -->
-        <div class="card">
-            <h2>Upload Documents</h2>
-            <form action="{{ url_for('upload_document') }}" method="post" enctype="multipart/form-data">
-                <div>
-                    <label for="file">Select PDF file:</label>
-                    <input type="file" name="file" id="file" accept=".pdf" required>
+        <header>
+            <div class="logo">
+                <i class="fas fa-shield-virus logo-icon"></i>
+                <h1>MediGuard</h1>
+            </div>
+            <p class="mediguard-tagline">Advanced Medical Intelligence System</p>
+        </header>
+
+        <!-- Flash messages -->
+        <div class="flash-messages">
+            {% for message in get_flashed_messages() %}
+                <div class="flash-message">
+                    <i class="fas fa-info-circle"></i> {{ message }}
                 </div>
-                <input type="submit" value="Upload and Process">
-            </form>
-            
-            <!-- Current Documents -->
-            <div>
-                <h3>Current Documents</h3>
+            {% endfor %}
+        </div>
+        
+        <div class="two-columns">
+            <!-- Document Upload Section -->
+            <div class="card">
+                <h2><i class="fas fa-file-medical card-icon"></i> Upload Medical Documents</h2>
+                <form action="{{ url_for('upload_document') }}" method="post" enctype="multipart/form-data">
+                    <div class="form-row">
+                        <label for="file">Select medical PDF file:</label>
+                        <input type="file" name="file" id="file" accept=".pdf" required>
+                        <span class="file-label">No file selected</span>
+                    </div>
+                    <input type="submit" value="Upload and Process">
+                </form>
+                
+                <!-- Current Documents -->
+                <div class="section-divider"></div>
+                <h3><i class="fas fa-folder-open"></i> Current Medical Resources</h3>
                 {% if documents %}
                     <ul class="document-list">
                         {% for document in documents %}
@@ -124,71 +50,77 @@
                         {% endfor %}
                     </ul>
                 {% else %}
-                    <p>No documents uploaded yet.</p>
+                    <p>No medical documents uploaded yet.</p>
                 {% endif %}
                 
                 <!-- Reset Database Button -->
-                <form action="{{ url_for('reset_db') }}" method="post" onsubmit="return confirm('Are you sure you want to reset the database? This will delete all processed documents.')">
-                    <button type="submit" class="danger">Reset Database</button>
+                <form action="{{ url_for('reset_db') }}" method="post" onsubmit="return confirm('Are you sure you want to reset the medical database? This will delete all processed documents.')">
+                    <button type="submit" class="danger">
+                        <i class="fas fa-trash"></i> Reset Database
+                    </button>
                 </form>
             </div>
-        </div>
-        
-        <!-- Query Section -->
-        <div class="card">
-            <h2>Query the RAG System</h2>
-            <div>
-                <label for="query-input">Enter your question:</label>
-                <textarea id="query-input" rows="3" placeholder="Ask something about the documents..."></textarea>
-                <button id="submit-query">Submit Query</button>
+            
+            <!-- Query Section -->
+            <div class="card">
+                <h2><i class="fas fa-search-plus card-icon"></i> Medical Query System</h2>
+
+                <!-- Query Type Options -->
+                <div class="query-options">
+                    <div class="query-option selected" data-type="disease">
+                        <div class="query-option-icon"><i class="fas fa-disease"></i></div>
+                        <div>Disease ID</div>
+                    </div>
+                    <div class="query-option" data-type="recovery">
+                        <div class="query-option-icon"><i class="fas fa-heartbeat"></i></div>
+                        <div>Recovery</div>
+                    </div>
+                    <div class="query-option" data-type="resources">
+                        <div class="query-option-icon"><i class="fas fa-hospital"></i></div>
+                        <div>Resources</div>
+                    </div>
+                    <div class="query-option" data-type="general">
+                        <div class="query-option-icon"><i class="fas fa-notes-medical"></i></div>
+                        <div>General</div>
+                    </div>
+                </div>
+                
+                <!-- Medical Query Form -->
+                <form id="medical-form">
+                    <input type="hidden" id="query-type" value="disease">
+                    
+                    <div class="form-row">
+                        <label for="symptoms-input">Patient Symptoms:</label>
+                        <textarea id="symptoms-input" rows="3" placeholder="Describe the symptoms..."></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="patient-details-input">Patient Details (age, history, etc):</label>
+                        <textarea id="patient-details-input" rows="3" placeholder="Add relevant patient information..."></textarea>
+                    </div>
+                    
+                    <button id="submit-query" type="button">
+                        <i class="fas fa-search"></i> Analyze Medical Case
+                    </button>
+                </form>
+                
+                <!-- General Query Form (hidden by default) -->
+                <form id="general-form" style="display: none;">
+                    <div class="form-row">
+                        <label for="query-input">Enter your medical question:</label>
+                        <textarea id="query-input" rows="3" placeholder="Ask something about the medical documents..."></textarea>
+                    </div>
+                    <button id="submit-general-query" type="button">
+                        <i class="fas fa-paper-plane"></i> Submit Query
+                    </button>
+                </form>
+                
                 <div class="loader" id="query-loader"></div>
                 <div id="result-container"></div>
             </div>
         </div>
     </div>
-    
-    <script>
-        document.getElementById('submit-query').addEventListener('click', async function() {
-            const queryText = document.getElementById('query-input').value.trim();
-            const resultContainer = document.getElementById('result-container');
-            const loader = document.getElementById('query-loader');
-            
-            if (!queryText) {
-                alert('Please enter a query');
-                return;
-            }
-            
-            // Show loader and hide previous results
-            loader.style.display = 'block';
-            resultContainer.style.display = 'none';
-            resultContainer.textContent = '';
-            
-            try {
-                const response = await fetch('/api/query', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ query: queryText })
-                });
-                
-                const data = await response.json();
-                
-                // Display the result
-                resultContainer.style.display = 'block';
-                if (data.error) {
-                    resultContainer.textContent = `Error: ${data.error}`;
-                } else {
-                    resultContainer.textContent = data.result;
-                }
-            } catch (error) {
-                resultContainer.style.display = 'block';
-                resultContainer.textContent = `Error: ${error.message}`;
-            } finally {
-                // Hide loader
-                loader.style.display = 'none';
-            }
-        });
-    </script>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
