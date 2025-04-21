@@ -1,0 +1,60 @@
+/* Custom Dashboard Styles */
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --danger-color: #e74c3c;
+    --warning-color: #f39c12;
+    --light-bg: #f8f9fa;
+    --dark-bg: #343a40;
+}
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+    /* Add a subtle fade-in animation */
+    animation: fadeIn 1s;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.sidebar {
+    background-color: #2c3e50;
+    color: white;
+    height: 100vh;
+    position: fixed;
+    padding-top: 20px;
+    animation: slideInLeft 0.7s;
+}
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+.dashboard-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    animation: bounceIn 0.8s;
+}
+@keyframes bounceIn {
+    0% { transform: scale(0.8); }
+    60% { transform: scale(1.05); }
+    80% { transform: scale(0.97); }
+    100% { transform: scale(1); }
+}
+.dashboard-card:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 8px 16px rgba(52, 152, 219, 0.15);
+}
+.card-icon {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    animation: popIn 0.6s;
+}
+@keyframes popIn {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}
+/* ...existing code for other classes... */
