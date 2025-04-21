@@ -6,6 +6,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
 from get_embedding_function import get_embedding_function
 from langchain.vectorstores.chroma import Chroma
+from tqdm import tqdm  # Import tqdm for progress bars
 
 
 CHROMA_PATH = "chroma"
@@ -23,8 +24,15 @@ def main():
         clear_database()
 
     # Create (or update) the data store.
+    print("📄 Loading documents...")
     documents = load_documents()
+    print(f"Found {len(documents)} documents")
+    
+    print("✂️ Splitting documents...")
     chunks = split_documents(documents)
+    print(f"Created {len(chunks)} chunks")
+    
+    print("💾 Adding to database...")
     add_to_chroma(chunks)
 
 
@@ -59,28 +67,36 @@ def add_to_chroma(chunks: list[Document]):
 
     # Only add documents that don't exist in the DB.
     new_chunks = []
-    for chunk in chunks_with_ids:
+    for chunk in tqdm(chunks_with_ids, desc="Filtering chunks"):
         if chunk.metadata["id"] not in existing_ids:
             new_chunks.append(chunk)
 
     if len(new_chunks):
         print(f"👉 Adding new documents: {len(new_chunks)}")
         new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
-        db.add_documents(new_chunks, ids=new_chunk_ids)
+        
+        # Add documents in batches with progress bar
+        batch_size = 50
+        for i in tqdm(range(0, len(new_chunks), batch_size), desc="Adding to database"):
+            batch = new_chunks[i:min(i+batch_size, len(new_chunks))]
+            batch_ids = new_chunk_ids[i:min(i+batch_size, len(new_chunk_ids))]
+            db.add_documents(batch, ids=batch_ids)
+        
         db.persist()
     else:
         print("✅ No new documents to add")
 
 
 def calculate_chunk_ids(chunks):
-
     # This will create IDs like "data/monopoly.pdf:6:2"
     # Page Source : Page Number : Chunk Index
 
+    print("🔢 Calculating chunk IDs...")
     last_page_id = None
     current_chunk_index = 0
 
-    for chunk in chunks:
+    # Add progress bar for chunk ID calculation
+    for chunk in tqdm(chunks, desc="Processing chunks"):
         source = chunk.metadata.get("source")
         page = chunk.metadata.get("page")
         current_page_id = f"{source}:{page}"
