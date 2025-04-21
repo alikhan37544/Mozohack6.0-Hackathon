@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            margin-top: 0;
+        }
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        .flash-message {
+            padding: 10px;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        button, input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button.danger {
+            background-color: #dc3545;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .document-list {
+            margin-top: 10px;
+            list-style-type: none;
+            padding: 0;
+        }
+        .document-list li {
+            padding: 5px 0;
+        }
+        #result-container {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 100px;
+            display: none;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 2s linear infinite;
+            margin: 10px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>RAG System Interface</h1>
+    
+    <!-- Flash messages -->
+    <div class="flash-messages">
+        {% for message in get_flashed_messages() %}
+            <div class="flash-message">{{ message }}</div>
+        {% endfor %}
+    </div>
+    
+    <div class="container">
+        <!-- Document Upload Section -->
+        <div class="card">
+            <h2>Upload Documents</h2>
+            <form action="{{ url_for('upload_document') }}" method="post" enctype="multipart/form-data">
+                <div>
+                    <label for="file">Select PDF file:</label>
+                    <input type="file" name="file" id="file" accept=".pdf" required>
+                </div>
+                <input type="submit" value="Upload and Process">
+            </form>
+            
+            <!-- Current Documents -->
+            <div>
+                <h3>Current Documents</h3>
+                {% if documents %}
+                    <ul class="document-list">
+                        {% for document in documents %}
+                            <li>{{ document }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No documents uploaded yet.</p>
+                {% endif %}
+                
+                <!-- Reset Database Button -->
+                <form action="{{ url_for('reset_db') }}" method="post" onsubmit="return confirm('Are you sure you want to reset the database? This will delete all processed documents.')">
+                    <button type="submit" class="danger">Reset Database</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Query Section -->
+        <div class="card">
+            <h2>Query the RAG System</h2>
+            <div>
+                <label for="query-input">Enter your question:</label>
+                <textarea id="query-input" rows="3" placeholder="Ask something about the documents..."></textarea>
+                <button id="submit-query">Submit Query</button>
+                <div class="loader" id="query-loader"></div>
+                <div id="result-container"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('submit-query').addEventListener('click', async function() {
+            const queryText = document.getElementById('query-input').value.trim();
+            const resultContainer = document.getElementById('result-container');
+            const loader = document.getElementById('query-loader');
+            
+            if (!queryText) {
+                alert('Please enter a query');
+                return;
+            }
+            
+            // Show loader and hide previous results
+            loader.style.display = 'block';
+            resultContainer.style.display = 'none';
+            resultContainer.textContent = '';
+            
+            try {
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: queryText })
+                });
+                
+                const data = await response.json();
+                
+                // Display the result
+                resultContainer.style.display = 'block';
+                if (data.error) {
+                    resultContainer.textContent = `Error: ${data.error}`;
+                } else {
+                    resultContainer.textContent = data.result;
+                }
+            } catch (error) {
+                resultContainer.style.display = 'block';
+                resultContainer.textContent = `Error: ${error.message}`;
+            } finally {
+                // Hide loader
+                loader.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
